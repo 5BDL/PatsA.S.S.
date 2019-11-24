@@ -2,6 +2,7 @@ import time
 import board
 import digitalio
 import busio
+import audiocore
 import adafruit_lis3dh
 import adafruit_thermistor
 from adafruit_ble.uart_server import UARTServer
@@ -10,9 +11,13 @@ from adafruit_bluefruit_connect.packet import Packet
 from adafruit_bluefruit_connect.button_packet import ButtonPacket
 from adafruit_bluefruit_connect.accelerometer_packet import AccelerometerPacket
 from adafruit_bluefruit_connect.location_packet import LocationPacket
-
+import neopixel
 
 ## Hardware Configuration
+# Hardware Global Variables
+brightnessLevel = 0.25
+noPixel = 10
+
 # Initiate BLE Server
 uart_server = UARTServer()
 #uart_client = UARTClient()
@@ -28,6 +33,7 @@ else:
     
 # Set range of accelerometer (can be RANGE_2_G, RANGE_4_G, RANGE_8_G or RANGE_16_G).
 lis3dh.range = adafruit_lis3dh.RANGE_2_G
+pixels = neopixel.NeoPixel(board.NEOPIXEL, noPixel, brightness = brightnessLevel, auto_write = False)
 
 
 ## Software Configuration
@@ -35,6 +41,26 @@ lis3dh.range = adafruit_lis3dh.RANGE_2_G
 threshold_low = -0.3
 threshold_high = 0.3
 getLocation = 1
+flatGreen = (0, 255, 0)
+edgeGreen = (10, 100, 10)
+uphillRed = (255, 0, 0)
+edgeRed = (100, 10, 10)
+downhillBlue = (0, 0 ,255)
+edgeBlue = (10, 10, 100)
+white = (255, 255, 255)
+p1 = (255, 0, 0)
+p2 = (0, 255, 0)
+p3 = (0, 0, 255)
+p4 = (255, 255, 0)
+p5 = (0, 255, 255)
+p6 = (255, 255, 255)
+p7 = (255, 100, 200)
+p8 = (100, 255, 200)
+p9 = (100, 200, 255)
+p10 = (50, 100, 200)
+blue = (0, 0, 255)
+black = (0, 0, 0)
+
 
 # Function Definitions
 # Calculate Threshold - Up/Down/Flat Threshold Value, 2 = downhill; 1 = flat; 0 = uphill
@@ -53,6 +79,42 @@ def initAcc(x,y,z):
     zInit = z
     return xInit, yInit, zInit
 
+def pixelsClear():
+    pixels.fill(black)
+    pixels.show()
+
+    
+def tiltIndicator(threshold_value):
+    if threshold_value == 1:
+        # Middle LEDS - 2, 1, 3 & 7, 8, 6
+        pixelsClear()
+        pixels[2] = flatGreen
+        pixels[7] = flatGreen
+        pixels[1] = edgeGreen
+        pixels[3] = edgeGreen
+        pixels[8] = edgeGreen
+        pixels[6] = edgeGreen
+        pixels.show()
+        print("Middle LEDs")
+    elif threshold_value == 0:
+        # Back LEDs 4, 3 & 5, 6
+        pixelsClear()
+        pixels[4] = uphillRed
+        pixels[5] = uphillRed
+        pixels[3] = edgeRed
+        pixels[6] = edgeRed
+        pixels.show()
+        print("Back LEDs")
+    elif threshold_value == 2:
+        # Front LEDs 0,1 & 9,8
+        pixelsClear()
+        pixels[0] = downhillBlue
+        pixels[9] = downhillBlue
+        pixels[1] = edgeBlue
+        pixels[8] = edgeBlue
+        pixels.show()
+        print("Front LEDs")
+
 
 # Main Loop
 while True:
@@ -69,6 +131,18 @@ while True:
 #    accPacket = AccelerometerPacket(accValues)
     # Small delay to keep things responsive but give time for interrupt processing.
     time.sleep(0.3)
+    print("pixel")
+    pixels[1]=p1
+    pixels[2]=p2
+    pixels[3]=p3
+    pixels[4]=p4
+    pixels[5]=p5
+    pixels[6]=p6
+    pixels[7]=p7
+    pixels[8]=p8
+    pixels[9]=p9
+    pixels[0]=p10
+    pixels.show()
     
     uart_server.start_advertising()
 #    uart_addresses = []
@@ -87,6 +161,7 @@ while True:
         time.sleep(0.1)
         getLocation = threshold(y, yInit)
         print("getLocation = ", getLocation)
+        tiltIndicator(getLocation)
         packet = Packet.from_stream(uart_server)
 #        if isinstance(packet, AccelerometerPacket):
 #            print(packet.x, packet.y, packet.z)
