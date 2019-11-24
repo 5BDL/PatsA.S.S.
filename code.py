@@ -34,17 +34,24 @@ lis3dh.range = adafruit_lis3dh.RANGE_2_G
 # Global Variables
 threshold_low = -0.3
 threshold_high = 0.3
+getLocation = 1
 
 # Function Definitions
-# Threshold Value, 2 = downhill; 1 = flat; 0 = uphill
-def threshold(input):
-    if input < threshold_low:
+# Calculate Threshold - Up/Down/Flat Threshold Value, 2 = downhill; 1 = flat; 0 = uphill
+def threshold(input, init):
+    if input < threshold_low + init:
         threshold_value = 2
-    elif input > threshold_high:
+    elif input > threshold_high + init:
         threshold_value = 0
     else:
         threshold_value = 1
     return threshold_value
+    
+def initAcc(x,y,z):
+    xInit = x
+    yInit = y
+    zInit = z
+    return xInit, yInit, zInit
 
 
 # Main Loop
@@ -55,8 +62,10 @@ while True:
     print("x = %0.3f G, y = %0.3f G, z = %0.3f G" % (x, y, z))
     accValues = (x, y, z)
     print("accValues = ", accValues)
-    threshold_value = threshold(y)
+    xInit, yInit, zInit = initAcc(x, y, z)
+    threshold_value = threshold(y, yInit)
     print("Threshold = ", threshold_value)
+    print("Acc Inits: x = %0.3f, y = %0.3f, z = %0.3f" % (xInit, yInit, zInit))
 #    accPacket = AccelerometerPacket(accValues)
     # Small delay to keep things responsive but give time for interrupt processing.
     time.sleep(0.3)
@@ -74,16 +83,20 @@ while True:
         print("x = %0.3f G, y = %0.3f G, z = %0.3f G" % (x, y, z))
         x_str = str(x)
         y_str = str(y)
-        uart_server.write(x_str + ',' + y_str + '\n')
-        time.sleep(1)
+#        uart_server.write(x_str + ',' + y_str + '\n')
+        time.sleep(0.1)
+        getLocation = threshold(y, yInit)
+        print("getLocation = ", getLocation)
         packet = Packet.from_stream(uart_server)
 #        if isinstance(packet, AccelerometerPacket):
 #            print(packet.x, packet.y, packet.z)
 #            time.sleep(0.1)
-        if isinstance(packet, LocationPacket):
+        if (isinstance(packet, LocationPacket) & getLocation == 1):
             print(packet.latitude, packet.longitude)
-            time.sleep(0.1)
+            time.sleep(2)
             lat=str(packet.latitude)
-            long=str(packet.longitude)
-            uart_server.write(lat + ',' + long + '\n')
+            longt=str(packet.longitude)
+            alti=str(packet.altitude)
+#            uart_server.write(lat + ',' + longt + alti + '\n')
+            getLocation = 0
             
