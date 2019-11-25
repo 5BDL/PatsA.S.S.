@@ -1,0 +1,23 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="2.96in" height="5.08in" viewBox="0 0 213.1 365.73">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #231f20;
+        stroke-miterlimit: 10;
+        stroke-width: 0.5px;
+      }
+    </style>
+  </defs>
+  <title>Phase1_Thick_v0.1</title>
+  <circle class="cls-1" cx="192.52" cy="16.95" r="4.18"/>
+  <circle class="cls-1" cx="192.52" cy="158.38" r="4.18"/>
+  <circle class="cls-1" cx="19.48" cy="16.95" r="4.18"/>
+  <circle class="cls-1" cx="19.48" cy="158.38" r="4.18"/>
+  <circle class="cls-1" cx="192.52" cy="203.6" r="4.18"/>
+  <circle class="cls-1" cx="192.52" cy="345.03" r="4.18"/>
+  <circle class="cls-1" cx="19.48" cy="203.6" r="4.18"/>
+  <circle class="cls-1" cx="19.48" cy="345.03" r="4.18"/>
+  <path class="cls-1" d="M278.44,11H80.92a7.56,7.56,0,0,0-7.54,7.54V88.93h34.91a72.28,72.28,0,1,1,0,22.68H73.38V182a7.57,7.57,0,0,0,7.54,7.54H278.44A7.56,7.56,0,0,0,286,182V18.52A7.56,7.56,0,0,0,278.44,11Z" transform="translate(-73.13 -10.73)"/>
+  <path class="cls-1" d="M278.44,197.63H80.92a7.56,7.56,0,0,0-7.54,7.54v70.41h53.86V244.69a12,12,0,0,1,12-12h80.88a12,12,0,0,1,12,12v77.94a12,12,0,0,1-12,12H139.24a12,12,0,0,1-12-12V298.26H73.38v70.41a7.56,7.56,0,0,0,7.54,7.54H278.44a7.56,7.56,0,0,0,7.54-7.54V205.17A7.56,7.56,0,0,0,278.44,197.63Z" transform="translate(-73.13 -10.73)"/>
+</svg>
