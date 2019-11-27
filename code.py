@@ -30,7 +30,7 @@ else:
     i2c = busio.I2C(board.SCL, board.SDA)
     int1 = digitalio.DigitalInOut(board.D6)  # Set to correct pin for interrupt!
     lis3dh = adafruit_lis3dh.LIS3DH_I2C(i2c, int1=int1)
-    
+
 # Set range of accelerometer (can be RANGE_2_G, RANGE_4_G, RANGE_8_G or RANGE_16_G).
 lis3dh.range = adafruit_lis3dh.RANGE_2_G
 pixels = neopixel.NeoPixel(board.NEOPIXEL, noPixel, brightness = brightnessLevel, auto_write = False)
@@ -38,8 +38,8 @@ pixels = neopixel.NeoPixel(board.NEOPIXEL, noPixel, brightness = brightnessLevel
 
 ## Software Configuration
 # Global Variables
-threshold_low = -0.3
-threshold_high = 0.3
+threshold_low = -0.35
+threshold_high = 0.35
 getLocation = 1
 flatGreen = (0, 255, 0)
 edgeGreen = (10, 100, 10)
@@ -72,7 +72,7 @@ def threshold(input, init):
     else:
         threshold_value = 1
     return threshold_value
-    
+
 def initAcc(x,y,z):
     xInit = x
     yInit = y
@@ -83,7 +83,7 @@ def pixelsClear():
     pixels.fill(black)
     pixels.show()
 
-    
+
 def tiltIndicator(threshold_value):
     if threshold_value == 1:
         # Middle LEDS - 2, 1, 3 & 7, 8, 6
@@ -96,6 +96,7 @@ def tiltIndicator(threshold_value):
         pixels[6] = edgeGreen
         pixels.show()
         print("Middle LEDs")
+        return "flat"
     elif threshold_value == 0:
         # Back LEDs 4, 3 & 5, 6
         pixelsClear()
@@ -105,6 +106,7 @@ def tiltIndicator(threshold_value):
         pixels[6] = edgeRed
         pixels.show()
         print("Back LEDs")
+        return "climb"
     elif threshold_value == 2:
         # Front LEDs 0,1 & 9,8
         pixelsClear()
@@ -114,6 +116,7 @@ def tiltIndicator(threshold_value):
         pixels[8] = edgeBlue
         pixels.show()
         print("Front LEDs")
+        return "decent"
 
 
 # Main Loop
@@ -143,7 +146,7 @@ while True:
     pixels[9]=p9
     pixels[0]=p10
     pixels.show()
-    
+
     uart_server.start_advertising()
 #    uart_addresses = []
 #    while not uart_addresses:
@@ -157,21 +160,20 @@ while True:
         print("x = %0.3f G, y = %0.3f G, z = %0.3f G" % (x, y, z))
         x_str = str(x)
         y_str = str(y)
-#        uart_server.write(x_str + ',' + y_str + '\n')
         time.sleep(0.1)
-        getLocation = threshold(y, yInit)
-        print("getLocation = ", getLocation)
-        tiltIndicator(getLocation)
+        tilt = threshold(y, yInit)
+        print("getTilt = ", tilt)
+        uart_server.write(x_str + ',' + y_str + ',' + tilt_value + '\n')
+        tilt_value = tiltIndicator(tilt)
         packet = Packet.from_stream(uart_server)
 #        if isinstance(packet, AccelerometerPacket):
 #            print(packet.x, packet.y, packet.z)
 #            time.sleep(0.1)
-        if (isinstance(packet, LocationPacket) & getLocation == 1):
+        if (isinstance(packet, LocationPacket) & tilt == 1):
             print(packet.latitude, packet.longitude)
             time.sleep(2)
             lat=str(packet.latitude)
             longt=str(packet.longitude)
             alti=str(packet.altitude)
 #            uart_server.write(lat + ',' + longt + alti + '\n')
-            getLocation = 0
-            
+            getTilt = 0
