@@ -2,10 +2,13 @@ import time
 import board
 import digitalio
 import busio
-import audiocore
 import adafruit_lis3dh
 import adafruit_thermistor
-from adafruit_ble.uart_server import UARTServer
+import audiocore
+#from adafruit_circuitplayground.bluefruit import cpb
+from adafruit_ble import BLERadio
+from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
+from adafruit_ble.services.nordic import UARTService
 #from adafruit_ble.uart_client import UARTClient
 from adafruit_bluefruit_connect.packet import Packet
 from adafruit_bluefruit_connect.button_packet import ButtonPacket
@@ -19,7 +22,10 @@ brightnessLevel = 0.25
 noPixel = 10
 
 # Initiate BLE Server
-uart_server = UARTServer()
+ble = BLERadio()
+uart_server = UARTService()
+advertisement = ProvideServicesAdvertisement(uart_server)
+
 #uart_client = UARTClient()
 
 if hasattr(board, 'ACCELEROMETER_SCL'):
@@ -147,13 +153,13 @@ while True:
     pixels[0]=p10
     pixels.show()
 
-    uart_server.start_advertising()
+    ble.start_advertising(advertisement)
 #    uart_addresses = []
 #    while not uart_addresses:
 #        uart_addresses = uart_client.scan(scanner)
-    while not uart_server.connected:
+    while not ble.connected:
         pass
-    while uart_server.connected:
+    while ble.connected:
 #        one_byte = uart_server.read(threshold_value)
 #        uart_server.write(one_byte)
         x, y, z = [value / adafruit_lis3dh.STANDARD_GRAVITY for value in lis3dh.acceleration]
@@ -163,8 +169,8 @@ while True:
         time.sleep(0.1)
         tilt = threshold(y, yInit)
         print("getTilt = ", tilt)
-        uart_server.write(x_str + ',' + y_str + ',' + tilt_value + '\n')
         tilt_value = tiltIndicator(tilt)
+        uart_server.write(x_str + ',' + y_str + ',' + tilt_value + '\n')
         packet = Packet.from_stream(uart_server)
 #        if isinstance(packet, AccelerometerPacket):
 #            print(packet.x, packet.y, packet.z)
